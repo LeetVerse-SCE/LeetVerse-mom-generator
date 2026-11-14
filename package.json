@@ -1,0 +1,18 @@
+{
+  "name": "leetverse-mom-generator",
+  "version": "1.0.0",
+  "description": "LeetVerse Minutes of Meeting Generator Frontend",
+  "scripts": {
+    "dev": "node generate-config.js && npx serve -l 5500",
+    "build:config": "node generate-config.js",
+    "start": "node generate-config.js && npx serve -l 5500"
+  },
+  "keywords": [
+    "leetverse",
+    "mom",
+    "generator"
+  ],
+  "author": "LeetVerse Team",
+  "license": "MIT"
+}
+

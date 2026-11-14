@@ -50,7 +50,9 @@
 }
 
 /* Reset */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -79,13 +81,16 @@ body {
     width: 6px;
     height: 6px;
 }
+
 ::-webkit-scrollbar-track {
     background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
@@ -301,9 +306,11 @@ body {
     0% {
         box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
     }
+
     70% {
         box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
     }
+
     100% {
         box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
     }
@@ -844,7 +851,7 @@ body {
 }
 
 /* When preceded by sign-off block, sign-off takes the auto margin and footer sits right below it */
-.doc-signoff-row + .doc-footer-meta {
+.doc-signoff-row+.doc-footer-meta {
     margin-top: 0;
 }
 
@@ -983,14 +990,18 @@ body {
 }
 
 @media print {
+
     /* Enable full-color backgrounds and graphics in all browsers */
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         color-adjust: exact !important;
     }
 
-    html, body {
+    html,
+    body {
         background: #ffffff !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -1240,7 +1251,533 @@ body {
         color: #94a3b8 !important;
     }
 
-    .doc-signoff-row + .doc-footer-meta {
+    .doc-signoff-row+.doc-footer-meta {
         margin-top: 0 !important;
     }
+}
+
+/* ==========================================================================
+   7. MOM INTEGRATION COMPONENTS: AUTH, CHECKLIST, MODAL, DELEGATION
+   ========================================================================== */
+
+/* Fullscreen Auth & Status Overlays */
+.mom-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(5, 46, 36, 0.88);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.mom-overlay.hidden {
+    display: none !important;
+}
+
+.mom-overlay-card {
+    background: #ffffff;
+    border-radius: var(--radius-xl);
+    padding: 36px 32px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(5, 46, 36, 0.25);
+    border: 1px solid var(--border-card);
+    animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalPop {
+    0% {
+        transform: scale(0.92);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.overlay-brand-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    margin: 0 auto 18px;
+    object-fit: cover;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.2);
+}
+
+.mom-overlay-card h2 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--emerald-darkest);
+    margin-bottom: 8px;
+}
+
+.mom-overlay-card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.google-signin-btn {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    color: #1e293b;
+    font-size: 14.5px;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.google-signin-btn:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.google-signin-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* User Profile Header Pill */
+.user-profile-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 4px 12px;
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 12.5px;
+}
+
+.user-role-badge {
+    text-transform: uppercase;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: #34d399;
+    color: #064e3b;
+}
+
+.user-role-badge.executive {
+    background: #fef08a;
+    color: #854d0e;
+}
+
+.signout-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.75);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: underline;
+    margin-left: 4px;
+    transition: color 0.15s;
+}
+
+.signout-btn:hover {
+    color: #ffffff;
+}
+
+/* Meeting Type Badge */
+.meeting-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--emerald-soft);
+    color: var(--emerald-dark);
+    border: 1px solid var(--border-card);
+    margin-left: 8px;
+}
+
+.meeting-type-badge.general {
+    background: #fef9c3;
+    color: #854d0e;
+    border-color: #fef08a;
+}
+
+/* Delegation Banner */
+.delegation-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+    font-size: 13.5px;
+    font-weight: 500;
+}
+
+.delegation-banner.hidden {
+    display: none;
+}
+
+.delegation-banner svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* Attendance Checklist Container */
+.roster-checklist-card {
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.roster-checklist-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 10px;
+}
+
+.roster-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.roster-small-btn {
+    background: #ffffff;
+    border: 1px solid var(--border-input);
+    border-radius: var(--radius-sm);
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.roster-small-btn:hover {
+    background: var(--emerald-soft);
+    border-color: var(--emerald-primary);
+    color: var(--emerald-darkest);
+}
+
+.roster-count-pill {
+    font-size: 12px;
+    font-weight: 600;
+    background: var(--emerald-soft);
+    color: var(--emerald-dark);
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid #bbf7d0;
+}
+
+.roster-search-input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 13px;
+    border: 1px solid var(--border-input);
+    border-radius: var(--radius-md);
+    background: #ffffff;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.roster-search-input:focus {
+    border-color: var(--border-focus);
+}
+
+.roster-scroll-list {
+    max-height: 240px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    padding-right: 4px;
+}
+
+.roster-item-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.roster-item-label:hover {
+    background: #f1fbf6;
+    border-color: var(--emerald-light);
+}
+
+.roster-item-label input[type="checkbox"] {
+    accent-color: var(--emerald-primary);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.roster-student-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.roster-student-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.roster-student-roll {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.roster-empty-notice {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 24px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+/* Update Attendance Button */
+.update-attendance-btn {
+    background: var(--emerald-dark);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 13.5px;
+    padding: 8px 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.update-attendance-btn:hover:not(:disabled) {
+    background: var(--emerald-primary);
+    transform: translateY(-1px);
+}
+
+.update-attendance-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.update-attendance-btn.updating {
+    background: #0284c7;
+    cursor: wait;
+}
+
+.update-attendance-btn.success {
+    background: #16a34a;
+}
+
+.update-attendance-btn.error {
+    background: #dc2626;
+}
+
+/* Modal Dialog */
+.mom-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.mom-modal-overlay.hidden {
+    display: none !important;
+}
+
+.mom-modal-card {
+    background: #ffffff;
+    border-radius: var(--radius-xl);
+    max-width: 520px;
+    width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    animation: modalPop 0.2s ease;
+}
+
+.mom-modal-header {
+    background: var(--bg-header-gradient);
+    color: #ffffff;
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mom-modal-header h3 {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.mom-modal-close-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.mom-modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 14px;
+}
+
+.modal-summary-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-summary-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.modal-summary-val {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-warning-box {
+    background: #fffbeb;
+    border: 1px solid #fef08a;
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #92400e;
+    line-height: 1.4;
+}
+
+.modal-conflict-box {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #991b1b;
+}
+
+.modal-action-row {
+    padding: 16px 24px;
+    background: #f8fafc;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Delegation Management Section */
+.delegation-card {
+    margin-top: 24px;
+}
+
+.delegation-form-row {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1.5fr auto;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 20px;
+}
+
+.delegation-list-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.delegation-list-table th,
+.delegation-list-table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.delegation-list-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 11.5px;
+    text-transform: uppercase;
+}
+
+.revoke-btn {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    padding: 4px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.revoke-btn:hover {
+    background: #fca5a5;
 }
