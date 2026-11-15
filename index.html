@@ -18,10 +18,49 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <!-- Configuration -->
+    <script src="config.js"></script>
+
     <!-- Main JavaScript -->
     <script src="script.js" defer></script>
 </head>
 <body>
+
+    <!-- ========================================================= -->
+    <!-- AUTH OVERLAYS (LOGIN & FORBIDDEN)                         -->
+    <!-- ========================================================= -->
+    <div id="loginOverlay" class="mom-overlay">
+        <div class="mom-overlay-card">
+            <img src="IMAGES/leetverse-logo.jpg" alt="Leetverse Logo" class="overlay-brand-icon">
+            <h2>LeetVerse MOM</h2>
+            <p>Sign in with your verified KIIT student Google account to manage Minutes of Meeting and domain attendance.</p>
+            <button type="button" id="googleSignInBtn" class="google-signin-btn">
+                <svg viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.02h3.87c2.26-2.09 3.67-5.17 3.67-9.12z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.87-3.02c-1.08.72-2.45 1.16-4.06 1.16-3.13 0-5.78-2.11-6.73-4.96H1.27v3.12C3.26 21.36 7.34 24 12 24z"/>
+                    <path fill="#FBBC05" d="M5.27 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.61H1.27C.46 8.23 0 10.06 0 12s.46 3.77 1.27 5.39l4-3.12z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.27 6.61l4 3.12c.95-2.85 3.6-4.98 6.73-4.98z"/>
+                </svg>
+                <span>Sign in with Google</span>
+            </button>
+            <div id="loginError" style="color: #dc2626; margin-top: 14px; font-size: 13px; display: none;"></div>
+        </div>
+    </div>
+
+    <div id="forbiddenOverlay" class="mom-overlay hidden">
+        <div class="mom-overlay-card">
+            <img src="IMAGES/leetverse-logo.jpg" alt="Leetverse Logo" class="overlay-brand-icon">
+            <h2>Access Restricted</h2>
+            <p id="forbiddenReason">You do not have an active Lead, Executive, or Delegated role for LeetVerse MOM Generator.</p>
+            <button type="button" id="forbiddenSignOutBtn" class="action-btn-secondary" style="width: 100%; justify-content: center;">
+                Sign Out
+            </button>
+        </div>
+    </div>
 
     <!-- ========================================================= -->
     <!-- FILLED GREEN HEADER                                       -->
@@ -41,6 +80,12 @@
 
             <!-- Header Controls & Live Clock -->
             <div class="header-controls">
+                <div id="userProfileBar" class="user-profile-bar hidden">
+                    <span id="userNameDisplay">User</span>
+                    <span id="userRoleBadge" class="user-role-badge">Lead</span>
+                    <button type="button" id="headerSignOutBtn" class="signout-btn">Sign out</button>
+                </div>
+
                 <div class="header-clock" id="liveClockWidget">
                     <svg class="clock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="10"></circle>
@@ -60,6 +105,15 @@
                     <span>Reset</span>
                 </button>
 
+                <button type="button" id="updateAttendanceBtn" class="header-btn header-btn-outline update-attendance-btn" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    <span id="updateAttendanceText">Update Attendance</span>
+                </button>
+
                 <button type="button" id="downloadPdf" class="header-btn header-btn-solid download-pdf-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -73,9 +127,17 @@
     </header>
 
     <!-- ========================================================= -->
-    <!-- MAIN WORKSPACE (LIGHT GREEN BACKGROUND)                   -->
+    <!-- MAIN WORKSPACE                                            -->
     <!-- ========================================================= -->
     <main class="page-container">
+        <!-- Delegation Banner for Delegates -->
+        <div id="delegationBanner" class="delegation-banner hidden">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span id="delegationBannerText">Delegated access active.</span>
+        </div>
+
         <!-- Status Notification Strip -->
         <div class="workspace-bar">
             <div class="workspace-status">
@@ -116,10 +178,16 @@
                         <input type="text" id="meetingTitle" placeholder="Enter meeting title" required>
                     </div>
 
-                    <!-- Domain -->
+                    <!-- Domain Select -->
                     <div class="field-item">
-                        <label for="domain">Domain</label>
-                        <input type="text" id="domain" placeholder="e.g. Technical">
+                        <label for="domainSelect">
+                            <span>Domain / Scope</span>
+                            <span class="req">*</span>
+                            <span id="meetingTypeBadge" class="meeting-type-badge">Domain</span>
+                        </label>
+                        <select id="domainSelect" required>
+                            <option value="">Loading domains...</option>
+                        </select>
                     </div>
 
                     <!-- Mode -->
@@ -157,10 +225,25 @@
                         <input type="text" id="venue" placeholder="e.g. Room 402 or meeting link">
                     </div>
 
-                    <!-- Attendance -->
+                    <!-- Attendance Checklist -->
                     <div class="field-item col-span-4">
-                        <label for="attendance">Attendance</label>
-                        <textarea id="attendance" rows="2" placeholder="Names of attendees"></textarea>
+                        <div class="roster-checklist-card">
+                            <div class="roster-checklist-header">
+                                <label style="margin: 0; font-weight: 700; color: var(--emerald-darkest);">
+                                    Roster Attendance Checklist
+                                </label>
+                                <div class="roster-actions">
+                                    <button type="button" id="selectAllRosterBtn" class="roster-small-btn">Select All</button>
+                                    <button type="button" id="clearAllRosterBtn" class="roster-small-btn">Clear</button>
+                                    <span id="attendanceCountPill" class="roster-count-pill">0 Present</span>
+                                </div>
+                            </div>
+                            <input type="text" id="rosterSearch" class="roster-search-input" placeholder="Search member by name or roll number...">
+                            <div id="rosterChecklist" class="roster-scroll-list">
+                                <div class="roster-empty-notice">Select a domain to load the member roster.</div>
+                            </div>
+                            <div id="existingMeetingWarning" class="modal-warning-box" style="display: none; margin-top: 6px;"></div>
+                        </div>
                     </div>
 
                     <!-- Agenda -->
@@ -181,10 +264,10 @@
                         <textarea id="actionItems" rows="3" placeholder="Tasks, owners, and deadlines"></textarea>
                     </div>
 
-                    <!-- Prepared By -->
+                    <!-- Prepared By (Readonly) -->
                     <div class="field-item col-span-4">
                         <label for="preparedBy">Prepared By</label>
-                        <input type="text" id="preparedBy" placeholder="Enter your name">
+                        <input type="text" id="preparedBy" placeholder="Auto-populated from account" readonly>
                     </div>
                 </div>
 
@@ -236,7 +319,108 @@
                 </div>
             </div>
         </section>
+
+        <!-- SECTION 3: IN-MEMORY DELEGATION PANEL (Leads & Executives) -->
+        <section class="content-card delegation-card" id="delegationSection" style="display: none;">
+            <div class="card-title-bar">
+                <div class="title-with-icon">
+                    <span class="title-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="8.5" cy="7.5" r="4"></circle>
+                            <line x1="20" y1="8" x2="20" y2="14"></line>
+                            <line x1="23" y1="11" x2="17" y2="11"></line>
+                        </svg>
+                    </span>
+                    <h2>Delegation Management</h2>
+                </div>
+            </div>
+            <div style="padding: 24px;">
+                <div class="delegation-form-row">
+                    <div class="field-item">
+                        <label for="delegateRoll">Target Member Roll</label>
+                        <input type="text" id="delegateRoll" placeholder="e.g. 24158130">
+                    </div>
+                    <div class="field-item">
+                        <label for="delegateDomain">Domain</label>
+                        <select id="delegateDomain"></select>
+                    </div>
+                    <div class="field-item">
+                        <label for="delegateHours">Duration</label>
+                        <select id="delegateHours">
+                            <option value="6">6 Hours</option>
+                            <option value="24" selected>24 Hours (1 Day)</option>
+                            <option value="72">72 Hours (3 Days)</option>
+                            <option value="168">168 Hours (7 Days)</option>
+                        </select>
+                    </div>
+                    <button type="button" id="grantDelegationBtn" class="action-btn-primary" style="height: 42px;">Grant</button>
+                </div>
+                <div id="delegationErrorMsg" style="color: #dc2626; font-size: 13px; margin-bottom: 12px; display: none;"></div>
+                <table class="delegation-list-table">
+                    <thead>
+                        <tr>
+                            <th>Domain</th>
+                            <th>Roll</th>
+                            <th>Name</th>
+                            <th>Expires At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="delegationsTableBody">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No active delegations.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </main>
+
+    <!-- CONFIRMATION MODAL FOR ATTENDANCE WRITE -->
+    <div id="attendanceConfirmModal" class="mom-modal-overlay hidden">
+        <div class="mom-modal-card">
+            <div class="mom-modal-header">
+                <h3>Confirm Attendance Submission</h3>
+                <button type="button" id="closeAttendanceModalBtn" class="mom-modal-close-btn">&times;</button>
+            </div>
+            <div class="mom-modal-body">
+                <div class="modal-summary-grid">
+                    <div class="modal-summary-item">
+                        <span class="modal-summary-label">Scope / Tab</span>
+                        <span id="modalScopeSummary" class="modal-summary-val">--</span>
+                    </div>
+                    <div class="modal-summary-item">
+                        <span class="modal-summary-label">Meeting Date</span>
+                        <span id="modalDateSummary" class="modal-summary-val">--</span>
+                    </div>
+                    <div class="modal-summary-item">
+                        <span class="modal-summary-label">Meeting Type</span>
+                        <span id="modalTypeSummary" class="modal-summary-val">--</span>
+                    </div>
+                    <div class="modal-summary-item">
+                        <span class="modal-summary-label">Present / Absent</span>
+                        <span id="modalCountsSummary" class="modal-summary-val">--</span>
+                    </div>
+                </div>
+
+                <div id="modalWarningContainer" style="display: none;"></div>
+
+                <div id="modalConflictContainer" style="display: none;">
+                    <div class="modal-conflict-box">
+                        <p><strong>Warning:</strong> Conflicts detected in one or more tabs.</p>
+                        <ul id="modalConflictList" style="margin-top: 6px; padding-left: 20px;"></ul>
+                        <label id="skipConflictsLabel" style="display: none; margin-top: 10px; cursor: pointer; font-weight: 600;">
+                            <input type="checkbox" id="skipConflictsCheckbox">
+                            Skip conflicting tabs and write remaining tabs
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-action-row">
+                <button type="button" id="cancelAttendanceBtn" class="action-btn-secondary">Cancel</button>
+                <button type="button" id="confirmWriteAttendanceBtn" class="action-btn-primary">Confirm & Submit</button>
+            </div>
+        </div>
+    </div>
 
     <!-- FOOTER -->
     <footer class="site-footer">
